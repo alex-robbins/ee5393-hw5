@@ -38,5 +38,5 @@
     (update node1 #(conj (set %) (->Edge node2 in neg)))
     (update node2 #(conj (set %) (->Edge node1 in neg)))))
 
-(defn inputs [g]
-  (set (map :in (apply set/union (vals g)))))
+(defn inputs [f]
+  (apply set/union (set/union (:hi f) (:lo f))))

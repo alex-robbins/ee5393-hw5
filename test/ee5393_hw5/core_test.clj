@@ -40,4 +40,4 @@
            (add-edge 4 1 :x true)))))
 
 (deftest inputs-test
-  (is (= #{:x :y} (inputs g))))
+  (is (= #{:x :y} (inputs f1))))
