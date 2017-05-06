@@ -33,10 +33,16 @@
     (every? (partial (complement path?) g node1 node2) (:lo f))
     [node1 node2])))
 
+(defn implements-every? [g fs]
+  (every? #(implements? g %) fs))
+
 (defn add-edge [g node1 node2 in neg]
   (-> g
     (update node1 #(conj (set %) (->Edge node2 in neg)))
     (update node2 #(conj (set %) (->Edge node1 in neg)))))
 
-(defn inputs [f]
-  (apply set/union (set/union (:hi f) (:lo f))))
+(defn inputs [& fs]
+  (apply set/union
+         (map (fn [f]
+                (apply set/union (set/union (:hi f) (:lo f))))
+              fs)))
