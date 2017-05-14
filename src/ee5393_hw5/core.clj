@@ -46,3 +46,10 @@
          (map (fn [f]
                 (apply set/union (set/union (:hi f) (:lo f))))
               fs)))
+
+(defn rand-bool
+  ([]
+   (rand-bool 0.5))
+  ([p]
+   (boolean
+    (< (rand) p))))
