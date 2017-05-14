@@ -53,3 +53,45 @@
   ([p]
    (boolean
     (< (rand) p))))
+
+(defn mutate [g inputs]
+  (let [in (rand-nth (vec inputs))
+        neg (rand-bool)
+        n-nodes (count (keys g))
+        node1 (rand-int n-nodes)
+        node2 (first (filter (partial not= node1)
+                             [(rand-int n-nodes) n-nodes (inc n-nodes)]))]
+    (add-edge g node1 node2 in neg)))
+
+(defn fitness [fs g]
+  (if (implements-every? g fs)
+    (/ 2 (apply + (map count (vals g))))
+    0))
+
+(defn reaper [k n max-fit]
+  (fn [[fitness g]]
+    (or (>= fitness max-fit)
+        (rand-bool (+ (/ k n) fitness)))))
+
+(defn stoch-beam-gens [fs k]
+  (let [inputs (apply inputs fs)
+        fitness (partial fitness fs)]
+    ((fn tail [gen max-fit]
+       (lazy-seq
+         (let [new (map (juxt fitness identity)
+                        (map #(mutate (second %) inputs) gen))
+               max-fit (apply max max-fit (map first new))
+               next-gen (into gen new)
+               next-gen (filter (reaper k (count next-gen) max-fit) next-gen)]
+           (cons next-gen (tail next-gen max-fit)))))
+     '([0 {}]) 0)))
+
+(defn stoch-beam-slns [fs k]
+  ((fn tail [slns]
+     (lazy-seq
+       (if-let [[head & more] (seq slns)]
+         (cons (second head) (tail (drop-while #(= (first head) (first %))
+                                               slns))))))
+   (drop-while (comp zero? first)
+               (map (partial apply max-key first)
+                    (stoch-beam-gens fs k)))))
